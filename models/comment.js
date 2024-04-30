@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const CommentSchema = new Schema({
-  user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  name: { type: String, required: true },
   post: { type: Schema.Types.ObjectId, ref: "Post", required: true },
   message: { type: String, required: true, maxLength: 200 },
   timestamp: { type: Date, default: Date.now }

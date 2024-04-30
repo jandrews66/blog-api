@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/post')
+const Comment = require('../models/comment')
 
 
 router.get('/', async (req, res) => {
     try {
-      const posts = await Post.find()
+      const posts = await Post.find().populate("user")
       res.json(posts)
     } catch (err) {
       res.status(500).json({ message: err.message })
@@ -14,7 +15,7 @@ router.get('/', async (req, res) => {
 
   router.get('/:id', async (req, res) => {
     try {
-      const post = await Post.findById(req.params.id)
+      const post = await Post.findById(req.params.id).populate("user")
       res.json(post)
     } catch (err) {
       return res.status(404).json({ message: "Cannot find post "})
@@ -58,6 +59,35 @@ router.delete('/:id', async (req, res) => {
       } catch (err) {
         return res.status(404).json({ message: "Cannot find post "})
       }});
+
+router.get('/:id/comments', async (req, res) => {
+  try {
+/*     const [post, comments] = await Promise.all([
+      Post.findById(req.params.id),
+      Comment.find({ post: req.params.id})
+    ]); */
+    const comments = await Comment.find({ post: req.params.id})
+    res.json(comments)
+
+  } catch (err) {
+    return res.status(404).json({ message: "Cannot find post "})
+  }
+});
+
+router.post('/:id/comments', async (req, res) => {
+  const comment = new Comment({
+    name: req.body.name,
+    message: req.body.message,
+    post: req.params.id,
+    timestamp: new Date()
+  })
+  try {
+    const newComment = await comment.save()
+    res.status(201).json(newComment)
+  } catch (err){
+    res.status(400).json({ message: err.message })
+  }
+});
 
 /* router.get('/:postId', (req, res) => {
     return res.send(`Get HTTP method on posts/${req.params.postId} resource`);

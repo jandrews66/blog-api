@@ -45,3 +45,17 @@ Content-Type: application/json
     "content": "content",
     "user": "6629b05bbbb311f7f26fcf83"
 }
+
+###
+
+POST http://localhost:3000/posts/6629d20c9f85378189f68ca9/comments
+Content-Type: application/json
+
+{
+    "name": "John",
+    "message": "Nice post"
+}
+
+###
+
+GET http://localhost:3000/posts/6629d20c9f85378189f68ca9/comments
