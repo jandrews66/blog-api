@@ -1,18 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
-/* GET home page. */
-/* router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Blog Api' });
-}); */
+const index_controller = require("../controllers/indexController")
 
 router.get('/', (req, res) => {
   return res.send('Received a GET HTTP method!!!!!!!!');
 });
 
-router.post('/', (req, res) => {
-  return res.send('Received a POST HTTP method');
-});
+router.post('/', index_controller.login_post)
+
+router.post('/signup', index_controller.signup_post)
 
 router.put('/', (req, res) => {
   return res.send('Received a PUT HTTP method');

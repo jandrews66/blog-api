@@ -59,3 +59,11 @@ Content-Type: application/json
 ###
 
 GET http://localhost:3000/posts/6629d20c9f85378189f68ca9/comments
+
+###
+
+POST http://localhost:3000/login
+
+###
+
+POST http://localhost:3000/signup
