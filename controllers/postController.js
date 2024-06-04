@@ -37,7 +37,12 @@ exports.post_put = asyncHandler(async (req, res, next) => {
 });
 
 exports.post_delete = asyncHandler(async (req, res, next) => {
-    await Post.findByIdAndDelete(req.params.id);
+    const post = await Post.findByIdAndDelete(req.params.id);
+    
+    if (!post) {
+        res.status(404).json({ message: "Post not found" });
+        return;  
+    }
     res.json({ message: "Deleted post" });
 });
 
