@@ -67,3 +67,38 @@ POST http://localhost:3000/login
 ###
 
 POST http://localhost:3000/signup
+Content-Type: application/json
+
+{
+    "first_name": "John",
+    "last_name": "Jones",
+    "username": "jonjones",
+    "password": "password",
+    "confirm_password": "password"
+}
+
+###
+
+POST http://localhost:3000/
+Content-Type: application/json
+
+{
+    "username": "jonjones",
+    "password": "password"
+}
+
+###
+
+POST http://localhost:3000/users/6657e685600b971b69663c7d/create
+Content-Type: application/json
+
+{
+    "title": "jonnies post",
+    "content": "loads of content"
+}
+###
+
+DELETE http://localhost:3000/posts/6629d20c9f85378189f68ca9
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjY2NTdlNjg1NjAwYjk3MWI2OTY2M2M3ZCIsImZpcnN0X25hbWUiOiJKb2huIiwibGFzdF9uYW1lIjoiSm9uZXMiLCJ1c2VybmFtZSI6ImpvbmpvbmVzIiwicGFzc3dvcmQiOiIkMmEkMTAkVWlKZXRoT2FGeTZWTFRTTzJId3A0ZXljYi9aMTllVDRVdVA3TlE4Y29uQWFhcDBlVzZlWVciLCJpc0F1dGhvciI6ZmFsc2UsIl9fdiI6MH0sImlhdCI6MTcxNzQ3NzEwMywiZXhwIjoxNzE3NDgwNzAzfQ.iHMkwo8Sgf9tTk3rzeIwD35VMlybiinqNsJnp4R8toY
+

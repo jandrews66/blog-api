@@ -32,7 +32,7 @@ exports.users_get = asyncHandler(async (req, res, next) => {
       res.status(201).json(newUser)
   });
   
-  exports.create_post = asyncHandler(async (req, res, next) => {
+/*   exports.create_post = asyncHandler(async (req, res, next) => {
     const post = new Post({
         title: req.body.title,
         content: req.body.content,
@@ -41,7 +41,7 @@ exports.users_get = asyncHandler(async (req, res, next) => {
     });
     const newPost = await post.save();
     res.status(201).json(newPost);
-});
+}); */
 /*   router.put('/:id', (req, res) => {
     return res.send('PUT HTTP method on user resource');
   });

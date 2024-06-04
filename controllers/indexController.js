@@ -4,7 +4,7 @@ const passport = require('passport');
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const { body, validationResult } = require("express-validator");
-
+const jwt = require('jsonwebtoken')
 
 exports.login_post = asyncHandler(async (req, res, next) => {
     passport.authenticate("local", (err, user, info) => {
@@ -18,9 +18,14 @@ exports.login_post = asyncHandler(async (req, res, next) => {
             if (err) {
                 return res.status(500).json({ message: "An error occurred during login" });
             }
-            return res.json({ userId: user.id, message: 'Success' });
+      // Generate JWT
+        const token = jwt.sign({ user }, 'secretkey', { expiresIn: '1h' }); // Replace 'secretkey' with real secret key
+
+      // Return the token and user info
+        return res.json({ token, user });
         });
     })(req, res, next); 
+
   });
   
   exports.signup_post = [

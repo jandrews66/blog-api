@@ -28,10 +28,17 @@ db.on("error", console.error.bind(console, "mongo connection error"));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+//authentication middleware
 app.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 
+//custom middleware to set currentUser in res.locals
+/* app.use((req, res, next) => {
+  res.locals.currentUser = req.user;
+  next();
+});
+ */
 app.use(cors())
 app.use(logger('dev'));
 app.use(express.json());
