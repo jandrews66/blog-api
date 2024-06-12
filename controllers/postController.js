@@ -18,9 +18,9 @@ exports.post_get = asyncHandler(async (req, res) => {
 exports.post_post = [
     verifyToken,
     (req, res, next) => {
-      jwt.verify(req.token, 'secretkey', (err, authData) => {
+      jwt.verify(req.token, process.env.ACCESS_TOKEN, (err, authData) => {
         if (err) {
-          res.sendStatus(403);
+            return res.status(403).json({ error: 'Forbidden' });
         } else {
           req.authData = authData; // Store auth data in request object
           next(); // Proceed to the next middleware
@@ -43,9 +43,9 @@ exports.post_post = [
 exports.post_put = [
     verifyToken,
     (req, res, next) => {
-      jwt.verify(req.token, 'secretkey', (err, authData) => {
+      jwt.verify(req.token, process.env.ACCESS_TOKEN, (err, authData) => {
         if (err) {
-          res.sendStatus(403);
+            return res.status(403).json({ error: 'Forbidden' });
         } else {
           req.authData = authData; // Store auth data in request object
           next(); // Proceed to the next middleware
@@ -71,9 +71,9 @@ exports.post_put = [
 exports.post_delete = [
     verifyToken,
     (req, res, next) => {
-      jwt.verify(req.token, 'secretkey', (err, authData) => {
+      jwt.verify(req.token, process.env.ACCESS_TOKEN, (err, authData) => {
         if (err) {
-          res.sendStatus(403);
+            return res.status(403).json({ error: 'Forbidden' });
         } else {
           req.authData = authData; // Store auth data in request object
           next(); // Proceed to the next middleware
@@ -111,9 +111,9 @@ exports.comments_post = asyncHandler(async (req, res, next) => {
 exports.comment_delete = [
     verifyToken,
     (req, res, next) => {
-      jwt.verify(req.token, 'secretkey', (err, authData) => {
+      jwt.verify(req.token, process.env.ACCESS_TOKEN, (err, authData) => {
         if (err) {
-          res.sendStatus(403);
+            return res.status(403).json({ error: 'Forbidden' });
         } else {
           req.authData = authData; // Store auth data in request object
           next(); // Proceed to the next middleware

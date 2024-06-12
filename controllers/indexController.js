@@ -19,7 +19,7 @@ exports.login_post = asyncHandler(async (req, res, next) => {
                 return res.status(500).json({ message: "An error occurred during login" });
             }
       // Generate JWT
-        const token = jwt.sign({ user }, 'secretkey', { expiresIn: '1h' }); // Replace 'secretkey' with real secret key
+        const token = jwt.sign({ user }, process.env.ACCESS_TOKEN, { expiresIn: '1h' }); // Replace 'secretkey' with real secret key
 
       // Return the token and user info
         return res.json({ token, user });
