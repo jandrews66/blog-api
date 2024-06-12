@@ -32,6 +32,7 @@ exports.post_post = [
             title: req.body.title,
             content: req.body.content,
             user: req.body.user,
+            isPublished: req.body.isPublished,
             timestamp: new Date()
         });
         const newPost = await post.save();
@@ -56,6 +57,7 @@ exports.post_put = [
             title: req.body.title,
             content: req.body.content,
             user: req.body.user,
+            isPublished: req.body.isPublished,
             timestamp: new Date()
         };
         const updatedPost = await Post.findByIdAndUpdate(req.params.id, update, { new: true });
@@ -105,6 +107,29 @@ exports.comments_post = asyncHandler(async (req, res, next) => {
     const newComment = await comment.save();
     res.status(201).json(newComment);
 });
+
+exports.comment_delete = [
+    verifyToken,
+    (req, res, next) => {
+      jwt.verify(req.token, 'secretkey', (err, authData) => {
+        if (err) {
+          res.sendStatus(403);
+        } else {
+          req.authData = authData; // Store auth data in request object
+          next(); // Proceed to the next middleware
+        }
+      });
+    },
+    asyncHandler(async (req, res, next) => {
+        const comment = await Comment.findByIdAndDelete(req.params.commentId);
+        
+        if (!comment) {
+            res.status(404).json({ message: "Comment not found" });
+            return;  
+        }
+        res.json({ message: "Deleted comment" });
+    })
+] 
 
 function verifyToken(req, res, next){
     // get auth header value

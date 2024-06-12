@@ -17,6 +17,9 @@ router.get('/:id/comments', post_controller.comments_get)
 
 router.post('/:id/comments', post_controller.comments_post)
 
+router.delete('/:id/comments/:commentId', post_controller.comment_delete)
+
+
 /* router.get('/:postId', (req, res) => {
     return res.send(`Get HTTP method on posts/${req.params.postId} resource`);
 });
