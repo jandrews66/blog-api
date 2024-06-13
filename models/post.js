@@ -7,7 +7,8 @@ const PostSchema = new Schema({
     content: { type: String, required: true},
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     timestamp: { type: Date, default: Date.now },
-    isPublished: { type: Boolean, default: false }
+    isPublished: { type: Boolean, default: false },
+    img: {type: String}
 });
 
 // Virtual for book's URL

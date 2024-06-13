@@ -3,6 +3,48 @@ const Post = require('../models/post');
 const Comment = require('../models/comment');
 const asyncHandler = require("express-async-handler");
 const jwt = require('jsonwebtoken')
+const multer = require('multer');
+let path = require('path');
+const { v4: uuidv4 } = require('uuid');
+
+//middleware to verify jwt 
+
+function verifyToken(req, res, next){
+    // get auth header value
+    const bearerHeader = req.headers['authorization'];
+    // check if bearer is undefined
+    if(typeof bearerHeader !== 'undefined') {
+        //seperate token from header
+        const bearer = bearerHeader.split(' ');
+        const bearerToken = bearer[1];
+        //set token
+        req.token = bearerToken;
+        next();
+    } else {
+        res.sendStatus(403)
+    }
+}
+
+//multer middleware 
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, path.join(__dirname, '../public/images'));
+    },
+    filename: function(req, file, cb) {   
+        cb(null, uuidv4() + '-' + Date.now() + path.extname(file.originalname));
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    const allowedFileTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if(allowedFileTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+}
+
+let upload = multer({ storage, fileFilter });
 
 exports.posts_get = asyncHandler(async (req, res, next) => {
     const posts = await Post.find().populate("user");
@@ -18,27 +60,31 @@ exports.post_get = asyncHandler(async (req, res) => {
 exports.post_post = [
     verifyToken,
     (req, res, next) => {
-      jwt.verify(req.token, process.env.ACCESS_TOKEN, (err, authData) => {
-        if (err) {
-            return res.status(403).json({ error: 'Forbidden' });
-        } else {
-          req.authData = authData; // Store auth data in request object
-          next(); // Proceed to the next middleware
-        }
-      });
+        jwt.verify(req.token, process.env.ACCESS_TOKEN, (err, authData) => {
+            if (err) {
+                return res.status(403).json({ error: 'Forbidden' });
+            } else {
+                req.authData = authData;
+                next();
+            }
+        });
     },
-    asyncHandler(async (req, res, next) => {
+    upload.single('img'),
+    asyncHandler(async (req, res) => {
+        const filename = req.file ? req.file.filename : "placeholder-image.jpeg";
+
         const post = new Post({
             title: req.body.title,
             content: req.body.content,
-            user: req.body.user,
+            user: req.authData.user, // Use authData for user
             isPublished: req.body.isPublished,
+            img: filename,
             timestamp: new Date()
         });
         const newPost = await post.save();
         res.status(201).json(newPost);
     })
-] 
+];
 
 exports.post_put = [
     verifyToken,
@@ -52,12 +98,14 @@ exports.post_put = [
         }
       });
     },
+    upload.single('img'),
     asyncHandler(async (req, res) => {
         const update = {
             title: req.body.title,
             content: req.body.content,
             user: req.body.user,
             isPublished: req.body.isPublished,
+            img: req.file.filename,
             timestamp: new Date()
         };
         const updatedPost = await Post.findByIdAndUpdate(req.params.id, update, { new: true });
@@ -131,18 +179,3 @@ exports.comment_delete = [
     })
 ] 
 
-function verifyToken(req, res, next){
-    // get auth header value
-    const bearerHeader = req.headers['authorization'];
-    // check if bearer is undefined
-    if(typeof bearerHeader !== 'undefined') {
-        //seperate token from header
-        const bearer = bearerHeader.split(' ');
-        const bearerToken = bearer[1];
-        //set token
-        req.token = bearerToken;
-        next();
-    } else {
-        res.sendStatus(403)
-    }
-}
