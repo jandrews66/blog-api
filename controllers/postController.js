@@ -100,12 +100,20 @@ exports.post_put = [
     },
     upload.single('img'),
     asyncHandler(async (req, res) => {
+        let filename;
+        if (req.file) {
+            filename = req.file.filename;
+        } else if (req.body.existingImg) {
+            filename = req.body.existingImg;
+        } else {
+            filename = 'placeholder-image.jpeg'; // Fallback to placeholder image if necessary
+        }
         const update = {
             title: req.body.title,
             content: req.body.content,
             user: req.body.user,
             isPublished: req.body.isPublished,
-            img: req.file.filename,
+            img: filename,
             timestamp: new Date()
         };
         const updatedPost = await Post.findByIdAndUpdate(req.params.id, update, { new: true });
