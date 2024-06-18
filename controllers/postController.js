@@ -47,8 +47,12 @@ const fileFilter = (req, file, cb) => {
 let upload = multer({ storage, fileFilter });
 
 exports.posts_get = asyncHandler(async (req, res, next) => {
-    const posts = await Post.find().populate("user");
-    res.json(posts);
+    const posts = await Post.find().populate("user").populate("comments");
+    const postsWithCommentCount = posts.map(post => ({
+        ...post.toObject(),
+        commentCount: post.comments.length
+    }));
+    res.json(postsWithCommentCount);
 });
 
 exports.post_get = asyncHandler(async (req, res) => {
@@ -161,6 +165,8 @@ exports.comments_post = asyncHandler(async (req, res, next) => {
         timestamp: new Date()
     });
     const newComment = await comment.save();
+    await Post.findByIdAndUpdate(req.params.id, { $push: { comments: newComment._id } });
+
     res.status(201).json(newComment);
 });
 

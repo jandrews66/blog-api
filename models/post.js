@@ -8,13 +8,8 @@ const PostSchema = new Schema({
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
     timestamp: { type: Date, default: Date.now },
     isPublished: { type: Boolean, default: false },
-    img: {type: String}
-});
-
-// Virtual for book's URL
-PostSchema.virtual("url").get(function () {
-  // We don't use an arrow function as we'll need the this object
-  return `/catalog/book/${this._id}`;
+    img: {type: String},
+    comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 });
 
 // Export model

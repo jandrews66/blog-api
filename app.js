@@ -11,6 +11,8 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const User = require("./models/user");
 const bcrypt = require("bcryptjs");
+const compression = require("compression");
+const helmet = require("helmet");
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -28,6 +30,10 @@ db.on("error", console.error.bind(console, "mongo connection error"));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+// Use Helmet!
+app.use(helmet());
+app.use(compression()); // Compress all routes
+
 //authentication middleware
 app.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
 app.use(passport.initialize());
@@ -39,6 +45,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Set up rate limiter: maximum of twenty requests per minute
+const RateLimit = require("express-rate-limit");
+const limiter = RateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 20,
+});
+// Apply rate limiter to all requests
+app.use(limiter);
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
