@@ -6,6 +6,8 @@ const jwt = require('jsonwebtoken')
 const multer = require('multer');
 let path = require('path');
 const { v4: uuidv4 } = require('uuid');
+const cloudinary = require("cloudinary").v2;
+
 
 //middleware to verify jwt 
 
@@ -25,26 +27,24 @@ function verifyToken(req, res, next){
     }
 }
 
-//multer middleware 
-const storage = multer.diskStorage({
-    destination: function(req, file, cb) {
-        cb(null, path.join(__dirname, '../public/images'));
-    },
-    filename: function(req, file, cb) {   
-        cb(null, uuidv4() + '-' + Date.now() + path.extname(file.originalname));
-    }
-});
-
-const fileFilter = (req, file, cb) => {
-    const allowedFileTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-    if(allowedFileTypes.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(null, false);
-    }
-}
-
-let upload = multer({ storage, fileFilter });
+//middleware for uploading images
+cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET,
+  });
+  async function handleUpload(file) {
+    const res = await cloudinary.uploader.upload(file, {
+      resource_type: "auto",
+    });
+    return res;
+  }
+  
+  const storage = new multer.memoryStorage();
+  const upload = multer({
+    storage,
+  });
+  
 
 exports.posts_get = asyncHandler(async (req, res, next) => {
     const posts = await Post.find().populate("user").populate("comments");
@@ -75,19 +75,21 @@ exports.post_post = [
     },
     upload.single('img'),
     asyncHandler(async (req, res) => {
-        const filename = req.file ? req.file.filename : "placeholder-image.jpeg";
-
+        const b64 = Buffer.from(req.file.buffer).toString("base64");
+        let dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+        const cldRes = await handleUpload(dataURI);
+        
         const post = new Post({
             title: req.body.title,
             content: req.body.content,
-            user: req.authData.user, // Use authData for user
+            user: req.authData.user,
             isPublished: req.body.isPublished,
-            img: filename,
-            timestamp: new Date()
+            img: cldRes.secure_url,
+            timestamp: new Date(),
         });
         const newPost = await post.save();
         res.status(201).json(newPost);
-    })
+    }),
 ];
 
 exports.post_put = [
@@ -95,38 +97,40 @@ exports.post_put = [
     (req, res, next) => {
       jwt.verify(req.token, process.env.ACCESS_TOKEN, (err, authData) => {
         if (err) {
-            return res.status(403).json({ error: 'Forbidden' });
+          return res.status(403).json({ error: 'Forbidden' });
         } else {
-          req.authData = authData; // Store auth data in request object
-          next(); // Proceed to the next middleware
+          req.authData = authData;
+          next();
         }
       });
     },
     upload.single('img'),
     asyncHandler(async (req, res) => {
-        let filename;
-        if (req.file) {
-            filename = req.file.filename;
-        } else if (req.body.existingImg) {
-            filename = req.body.existingImg;
-        } else {
-            filename = 'placeholder-image.jpeg'; // Fallback to placeholder image if necessary
-        }
-        const update = {
-            title: req.body.title,
-            content: req.body.content,
-            user: req.body.user,
-            isPublished: req.body.isPublished,
-            img: filename,
-            timestamp: new Date()
-        };
-        const updatedPost = await Post.findByIdAndUpdate(req.params.id, update, { new: true });
-        if (!updatedPost) {
-            return res.status(404).json({ message: "Post not found" });
-        }
-        res.status(200).json(updatedPost);
+      const post = await Post.findById(req.params.id);
+  
+      if (!post) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+  
+      let imageUrl = post.img; // Use the existing image URL
+  
+      if (req.file) {
+        const b64 = Buffer.from(req.file.buffer).toString("base64");
+        const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+        const cldRes = await handleUpload(dataURI);
+        imageUrl = cldRes.secure_url; // Update the image URL if a new image is uploaded
+      }
+  
+      post.title = req.body.title;
+      post.content = req.body.content;
+      post.isPublished = req.body.isPublished;
+      post.img = imageUrl;
+      post.timestamp = new Date();
+  
+      const updatedPost = await post.save();
+      res.status(200).json(updatedPost);
     })
-];
+  ];
 
 exports.post_delete = [
     verifyToken,

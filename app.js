@@ -4,8 +4,8 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const session = require("express-session");
-const cors = require('cors');
-require('dotenv').config();
+const cors = require('cors')
+require('dotenv').config()
 const mongoose = require("mongoose");
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
@@ -21,7 +21,7 @@ const postsRouter = require('./routes/posts');
 const app = express();
 
 // Set up mongoose connection
-const mongoDb = process.env.MONGODB_URI;
+const mongoDb = process.env.MONGODB_URI
 mongoose.connect(mongoDb);
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
@@ -34,57 +34,23 @@ app.set('view engine', 'jade');
 app.use(helmet());
 app.use(compression()); // Compress all routes
 
-// Authentication middleware
+//authentication middleware
 app.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Configure CORS to allow requests from frontends
-const allowedOrigins = [
-  'https://blog-author-admin.netlify.app',
-  'https://blog-user.netlify.app'
-];
-
-const corsOptions = {
-  origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-          const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-          return callback(new Error(msg), false);
-      }
-      return callback(null, true);
-  },
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
-  optionsSuccessStatus: 204
-};
-
-app.use(cors(corsOptions));
+app.use(cors())
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-
-// Serve static files with CORS headers
-app.use('/images', express.static(path.join(__dirname, 'public/images')));
-
-// Set headers for static files
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    next();
-});
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Set up rate limiter: maximum of twenty requests per minute
 const RateLimit = require("express-rate-limit");
 const limiter = RateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 20,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
 });
 // Apply rate limiter to all requests
 app.use(limiter);
@@ -92,6 +58,7 @@ app.use(limiter);
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/posts', postsRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
